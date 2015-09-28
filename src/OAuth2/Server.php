@@ -269,53 +269,8 @@ class Server implements ResourceControllerInterface,
         return $value;
     }
 
-    /**
-     * Handle a revoke token request
-     * This would be called from the "/revoke" endpoint as defined in the draft Token Revocation spec
-     *
-     * @see https://tools.ietf.org/html/rfc7009#section-2
-     *
-     * @param RequestInterface $request
-     * @param ResponseInterface $response
-     * @return Response|ResponseInterface
-     */
-    public function handleRevokeRequest(RequestInterface $request, ResponseInterface $response = null)
-    {
-        $this->response = is_null($response) ? new Response() : $response;
-        $this->getTokenController()->handleRevokeRequest($request, $this->response);
-
-        return $this->response;
-    }
-
-    /**
-     * Redirect the user appropriately after approval.
-     *
-     * After the user has approved or denied the resource request the
-     * authorization server should call this function to redirect the user
-     * appropriately.
-     *
-     * @param $request
-     * The request should have the follow parameters set in the querystring:
-     * - response_type: The requested response: an access token, an
-     * authorization code, or both.
-     * - client_id: The client identifier as described in Section 2.
-     * - redirect_uri: An absolute URI to which the authorization server
-     * will redirect the user-agent to when the end-user authorization
-     * step is completed.
-     * - scope: (optional) The scope of the resource request expressed as a
-     * list of space-delimited strings.
-     * - state: (optional) An opaque value used by the client to maintain
-     * state between the request and callback.
-     * @param $is_authorized
-     * TRUE or FALSE depending on whether the user authorized the access.
-     * @param $user_id
-     * Identifier of user who authorized the client
-     *
-     * @see http://tools.ietf.org/html/rfc6749#section-4
-     *
-     * @ingroup oauth2_section_4
-     */
-    public function handleAuthorizeRequest(RequestInterface $request, ResponseInterface $response, $is_authorized, $user_id = null)
+    public function handleAuthorizeRequest(RequestInterface $request, ResponseInterface $response,
+                                           $is_authorized, $user_id = null)
     {
         $this->response = $response;
         $this->getAuthorizeController()->handleAuthorizeRequest($request, $this->response, $is_authorized, $user_id);
@@ -366,17 +321,17 @@ class Server implements ResourceControllerInterface,
         return $value;
     }
 
-    public function addGrantType(GrantTypeInterface $grantType, $identifier = null)
+    public function addGrantType(GrantTypeInterface $grantType, $key = null)
     {
-        if (!is_string($identifier)) {
-            $identifier = $grantType->getQuerystringIdentifier();
+        if (is_string($key)) {
+            $this->grantTypes[$key] = $grantType;
+        } else {
+            $this->grantTypes[$grantType->getQuerystringIdentifier()] = $grantType;
         }
 
-        $this->grantTypes[$identifier] = $grantType;
 
-        // persist added grant type down to TokenController
         if (!is_null($this->tokenController)) {
-            $this->getTokenController()->addGrantType($grantType, $identifier);
+            $this->getTokenController()->addGrantType($grantType);
         }
     }
 

@@ -155,6 +155,21 @@ class AccessToken implements AccessTokenInterface
         return $this->generateAccessToken(); // let's reuse the same scheme for token generation
     }
 
+	/**
+     * 产生28位 openid
+     * @param $clientID
+     * @param $user_id 用户在服务端登录id
+     * @return string
+     */
+    protected function generateOpenID($clientID,$user_id){
+        $str = substr($clientID,0,6);
+        $str .= substr(md5($user_id,false),0,15);
+        $encryptionUtil = new Jwt();
+        $str = $encryptionUtil->urlSafeB64Encode($str);
+
+        return $str;
+    }
+
     /**
      * Handle the revoking of refresh tokens, and access tokens if supported / desirable
      * RFC7009 specifies that "If the server is unable to locate the token using
