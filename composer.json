@@ -1,5 +1,5 @@
 {
-    "name": "qycloud/oauth"
+    "name": "qycloud/oauth",
     "description":"OAuth2 Server for PHP",
     "keywords":["oauth","oauth2","auth"],
     "type":"library",
