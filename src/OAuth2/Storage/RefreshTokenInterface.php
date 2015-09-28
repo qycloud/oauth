@@ -36,31 +36,7 @@ interface RefreshTokenInterface
      */
     public function getRefreshToken($refresh_token);
 
-    /**
-     * Take the provided refresh token values and store them somewhere.
-     *
-     * This function should be the storage counterpart to getRefreshToken().
-     *
-     * If storage fails for some reason, we're not currently checking for
-     * any sort of success/failure, so you should bail out of the script
-     * and provide a descriptive fail message.
-     *
-     * Required for OAuth2::GRANT_TYPE_REFRESH_TOKEN.
-     *
-     * @param $refresh_token
-     * Refresh token to be stored.
-     * @param $client_id
-     * Client identifier to be stored.
-     * @param $user_id
-     * User identifier to be stored.
-     * @param $expires
-     * Expiration timestamp to be stored. 0 if the token doesn't expire.
-     * @param $scope
-     * (optional) Scopes to be stored in space-separated string.
-     *
-     * @ingroup oauth2_section_6
-     */
-    public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null);
+    public function setRefreshToken($refresh_token, $client_id, $user_id, $expires,$openID = null, $scope = null);
 
     /**
      * Expire a used refresh token.

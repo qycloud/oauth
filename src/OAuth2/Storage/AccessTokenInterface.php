@@ -31,33 +31,5 @@ interface AccessTokenInterface
      */
     public function getAccessToken($oauth_token);
 
-    /**
-     * Store the supplied access token values to storage.
-     *
-     * We need to store access token data as we create and verify tokens.
-     *
-     * @param $oauth_token    oauth_token to be stored.
-     * @param $client_id      client identifier to be stored.
-     * @param $user_id        user identifier to be stored.
-     * @param int    $expires expiration to be stored as a Unix timestamp.
-     * @param string $scope   OPTIONAL Scopes to be stored in space-separated string.
-     *
-     * @ingroup oauth2_section_4
-     */
-    public function setAccessToken($oauth_token, $client_id, $user_id, $expires, $scope = null);
-
-    /**
-     * Expire an access token.
-     *
-     * This is not explicitly required in the spec, but if defined in a draft RFC for token
-     * revoking (RFC 7009) https://tools.ietf.org/html/rfc7009
-     *
-     * @param $access_token
-     * Access token to be expired.
-     *
-     * @ingroup oauth2_section_6
-     *
-     * @todo v2.0 include this method in interface. Omitted to maintain BC in v1.x
-     */
-    //public function unsetAccessToken($access_token);
+    public function setAccessToken($oauth_token, $client_id, $user_id, $expires,$openID = null, $scope = null);
 }

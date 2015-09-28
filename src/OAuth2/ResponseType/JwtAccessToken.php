@@ -92,6 +92,7 @@ class JwtAccessToken extends AccessToken
             'access_token' => $access_token,
             'expires_in' => $this->config['access_lifetime'],
             'token_type' => $this->config['token_type'],
+            "open_id" => $this->generateOpenID($client_id,$user_id),
             'scope' => $scope
         );
 
@@ -107,7 +108,7 @@ class JwtAccessToken extends AccessToken
             if ($this->config['refresh_token_lifetime'] > 0) {
                 $expires = time() + $this->config['refresh_token_lifetime'];
             }
-            $this->refreshStorage->setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope);
+            $this->refreshStorage->setRefreshToken($refresh_token, $client_id, $user_id, $expires,$token["open_id"], $scope);
             $token['refresh_token'] = $refresh_token;
         }
 

@@ -70,7 +70,11 @@ class AuthorizeController implements AuthorizeControllerInterface
 
         // If no redirect_uri is passed in the request, use client's registered one
         if (empty($this->redirect_uri)) {
-            $clientData              = $this->clientStorage->getClientDetails($this->client_id);
+            $grant_type = $request->query('grant_type', $request->request('grant_type'));
+            $clientData              = $this->clientStorage->getClientDetails(
+                $this->client_id,
+                $grant_type
+            );
             $registered_redirect_uri = $clientData['redirect_uri'];
         }
 
@@ -128,7 +132,16 @@ class AuthorizeController implements AuthorizeControllerInterface
 
     public function validateAuthorizeRequest(RequestInterface $request, ResponseInterface $response)
     {
-        // Make sure a valid client id was supplied (we can not redirect because we were unable to verify the URI)
+        //校验url是否在白名单内
+        if (isset($request->server['HTTP_REFERER']) && !$this->validateWhiteList(parse_url($request->server['HTTP_REFERER'])['host'])) {
+            $response->setError(
+                400,
+                'invalid_client',
+                "The client id supplied is invalid and is not in the white list"
+            );
+            return false;
+        }
+
         if (!$client_id = $request->query('client_id', $request->request('client_id'))) {
             // We don't have a good URI to use
             $response->setError(400, 'invalid_client', "No client id supplied");
@@ -136,10 +149,15 @@ class AuthorizeController implements AuthorizeControllerInterface
             return false;
         }
 
-        // Get client details
-        if (!$clientData = $this->clientStorage->getClientDetails($client_id)) {
-            $response->setError(400, 'invalid_client', 'The client id supplied is invalid');
+  		  if (!$grant_type = $request->query('grant_type', $request->request('grant_type'))) {
+            // We don't have a good URI to use
+            $response->setError(400, 'invalid_client', "No grant_types supplied");
+            return false;
+        }
 
+
+        if (!$clientData = $this->clientStorage->getClientDetails($client_id, $grant_type)) {
+            $response->setError(400, 'invalid_client', 'The client id or grant_types supplied is invalid');
             return false;
         }
 
@@ -233,9 +251,7 @@ class AuthorizeController implements AuthorizeControllerInterface
         $requestedScope = $this->scopeUtil->getScopeFromRequest($request);
 
         if ($requestedScope) {
-            // restrict scope by client specific scope if applicable,
-            // otherwise verify the scope exists
-            $clientScope = $this->clientStorage->getClientScope($client_id);
+            $clientScope = $this->clientStorage->getClientScope($client_id, $grant_type);
             if ((is_null($clientScope) && !$this->scopeUtil->scopeExists($requestedScope))
                 || ($clientScope && !$this->scopeUtil->checkScope($requestedScope, $clientScope))) {
                 $response->setRedirect($this->config['redirect_status_code'], $redirect_uri, $state, 'invalid_scope', 'An unsupported scope was requested', null);
@@ -379,5 +395,32 @@ class AuthorizeController implements AuthorizeControllerInterface
     public function getResponseType()
     {
         return $this->response_type;
+    }
+
+    /**
+     * 校验url白名单
+     */
+    public function validateWhiteList($urlhost)
+    {
+        $access = false;
+        $whiteList = Config("authorizationurllist.whitelist");
+
+        if ($urlhost !== Config("app.www_domain") ) {
+            if (is_array($whiteList) ) {
+                foreach ($whiteList as $value) {
+                    if (stripos($urlhost, $value) !== false ) {
+                        $access = true;
+                    }
+                }
+            } else {
+                if (isset($whiteList) && stripos($urlhost, $whiteList) !== false) {
+                    $access = true;
+                }
+            }
+        } else {
+            $access = true;
+        }
+
+        return $access;
     }
 }

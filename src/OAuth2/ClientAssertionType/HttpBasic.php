@@ -59,7 +59,7 @@ class HttpBasic implements ClientAssertionTypeInterface
 
                 return false;
             }
-        } elseif ($this->storage->checkClientCredentials($clientData['client_id'], $clientData['client_secret']) === false) {
+        } elseif ($this->storage->checkClientCredentials($clientData['client_id'], $clientData['grant_type'], $clientData['client_secret']) === false) {
             $response->setError(400, 'invalid_client', 'The client credentials are invalid');
 
             return false;
@@ -109,7 +109,7 @@ class HttpBasic implements ClientAssertionTypeInterface
                  * @see http://tools.ietf.org/html/rfc6749#section-2.3.1
                  */
 
-                return array('client_id' => $request->request('client_id'), 'client_secret' => $request->request('client_secret'));
+                return array('client_id' => $request->request('client_id'),'grant_type' => $request->request('grant_type'), 'client_secret' => $request->request('client_secret'));
             }
         }
 

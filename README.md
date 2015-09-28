@@ -1,4 +1,5 @@
 oauth2-server-php
+=================
 
 [![Build Status](https://travis-ci.org/bshaffer/oauth2-server-php.svg?branch=develop)](https://travis-ci.org/bshaffer/oauth2-server-php)
 
