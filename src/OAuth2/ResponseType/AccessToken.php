@@ -2,6 +2,7 @@
 
 namespace OAuth2\ResponseType;
 
+use OAuth2\Encryption\Jwt;
 use OAuth2\Storage\AccessTokenInterface as AccessTokenStorageInterface;
 use OAuth2\Storage\RefreshTokenInterface;
 
@@ -78,11 +79,11 @@ class AccessToken implements AccessTokenInterface
             "access_token" => $this->generateAccessToken(),
             "expires_in" => $this->config['access_lifetime'],
             "token_type" => $this->config['token_type'],
+            "open_id" => $this->generateOpenID($client_id,$user_id),
             "scope" => $scope
         );
 
-        $this->tokenStorage->setAccessToken($token["access_token"], $client_id, $user_id, $this->config['access_lifetime'] ? time() + $this->config['access_lifetime'] : null, $scope);
-
+        $this->tokenStorage->setAccessToken($token["access_token"], $client_id, $user_id, $this->config['access_lifetime'] ? time() + $this->config['access_lifetime'] : null, $token["open_id"],$scope);
         /*
          * Issue a refresh token also, if we support them
          *
@@ -95,8 +96,7 @@ class AccessToken implements AccessTokenInterface
             if ($this->config['refresh_token_lifetime'] > 0) {
                 $expires = time() + $this->config['refresh_token_lifetime'];
             }
-            $this->refreshStorage->setRefreshToken($token['refresh_token'], $client_id, $user_id, $expires, $scope);
-        }
+            $this->refreshStorage->setRefreshToken($token['refresh_token'], $client_id, $user_id, $expires, $token["open_id"],$scope);        }
 
         return $token;
     }
